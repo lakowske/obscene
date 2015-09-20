@@ -9,12 +9,6 @@ module.exports.nodeFields = [
     {name : 'id', type: 'text', predicate : 'primary key'},
     {name : 'name', type: 'text'},
     {name : 'parent', type: 'text'},
-    {name : 'about_up', type: 'float(53)', predicate : 'not null'},
-    {name : 'about_right', type: 'float(53)', predicate : 'not null'},
-    {name : 'about_forward', type: 'float(53)', predicate : 'not null'},
-    {name : 'x', type: 'float(53)', predicate : 'not null'},
-    {name : 'y', type: 'float(53)', predicate : 'not null'},
-    {name : 'z', type: 'float(53)', predicate : 'not null'},
     {name : 'localmatrix', type : 'float(53)[4][4]'},
     {name : 'localvectors', type : 'float(53)[4][4]'}
 ]
@@ -38,6 +32,33 @@ function origin() {
 }
 
 /*
+ * Return the position along the x axis.
+ */
+function getX(sceneNode) {
+
+    return sceneNode.localmatrix[12];
+    
+}
+
+/*
+ * Return the position along the y axis.
+ */
+function getY(sceneNode) {
+
+    return sceneNode.localmatrix[13];
+    
+}
+
+/*
+ * Return the position along the z axis.
+ */
+function getZ(sceneNode) {
+
+    return sceneNode.localmatrix[14];
+    
+}
+
+/*
  * Return the right vector.
  */
 function getRight(sceneNode) {
@@ -49,24 +70,26 @@ function getRight(sceneNode) {
 }
 
 /*
- * Return the forward vector.
+ * Return the up vector.  Here we use the y axis for up because opengl's coordinate system
+ * specifies up as y in the clip space.  The identity matrix's second row points along the y
+ * axis, so return the second row.
  */
-function getForward(sceneNode) {
+function getUp(sceneNode) {
 
-    var forward = [sceneNode.localvectors[4], sceneNode.localvectors[5], sceneNode.localvectors[6]];
+    var up = [sceneNode.localvectors[4], sceneNode.localvectors[5], sceneNode.localvectors[6]];
 
-    return forward;
+    return up;
 
 }
 
 /*
- * Return the up vector.
+ * Return the forward vector.
  */
-function getUp(sceneNode) {
+function getForward(sceneNode) {
 
-    var up = [sceneNode.localvectors[8], sceneNode.localvectors[9], sceneNode.localvectors[10]];
+    var forward = [sceneNode.localvectors[8], sceneNode.localvectors[9], sceneNode.localvectors[10]];
 
-    return up;
+    return forward;
     
 }
 
@@ -78,7 +101,7 @@ function setW(localvectors) {
     localvectors[15] = 1;
 
     return localvectors;
-}    
+}
 
 /*
  * Return a scene node translated by vector.
@@ -86,10 +109,6 @@ function setW(localvectors) {
 function translate(vector) {
 
     var o = origin();
-
-    o.x = vector[0];
-    o.y = vector[1];
-    o.z = vector[2];
     
     mat4.translate(o.localmatrix, o.localmatrix, vector);
     
@@ -153,10 +172,6 @@ function combine(parent, child) {
 
     mat4.multiply(o.localmatrix, parent.localmatrix, child.localmatrix);
 
-    o.x = o.localmatrix[12];
-    o.y = o.localmatrix[13];
-    o.z = o.localmatrix[14];
-    
     mat4.multiply(o.localvectors, o.localvectors, o.localmatrix);
 
     setW(o.localvectors);
@@ -190,9 +205,17 @@ function perspectiveCamera(fieldOfViewInRadians, aspect, near, far) {
     return o;
 }
 
-module.exports.rotate       = rotate;
-module.exports.translate    = translate;
-module.exports.combine      = combine;
-module.exports.aboutUp      = aboutUp;
-module.exports.aboutRight   = aboutRight;
-module.exports.aboutForward = aboutForward;
+module.exports.origin            = origin;
+module.exports.rotate            = rotate;
+module.exports.translate         = translate;
+module.exports.combine           = combine;
+module.exports.aboutUp           = aboutUp;
+module.exports.aboutRight        = aboutRight;
+module.exports.aboutForward      = aboutForward;
+module.exports.getUp             = getUp;
+module.exports.getForward        = getForward;
+module.exports.getRight          = getRight;
+module.exports.getX              = getX;
+module.exports.getY              = getY;
+module.exports.getZ              = getZ;
+module.exports.perspectiveCamera = perspectiveCamera;
